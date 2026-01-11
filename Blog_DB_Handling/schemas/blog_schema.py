@@ -31,6 +31,12 @@ class CreateBlogRequest(BaseModel):
     content: str = Field(..., min_length=2, max_length=4000)
     image_loc: Optional[str] = Field(None, max_length=400)
 
+class CreateBlogResponse(BaseModel):
+    id: int
+
+    class Config:
+        from_attributes = True
+
 class ReadBlogResponse(BaseModel):
     id: int
     title: str
@@ -41,3 +47,8 @@ class ReadBlogResponse(BaseModel):
 
     class Config:
         from_attributes = True  # ORM → Pydantic 변환 허용
+
+class UpdateBlogRequest(BaseModel):
+    title: Optional[str] = Field(None, min_length=2, max_length=200)
+    author: Optional[str] = Field(None, max_length=100)
+    content: Optional[str] = Field(None, min_length=2, max_length=4000)
