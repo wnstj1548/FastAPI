@@ -10,68 +10,29 @@ from sqlalchemy.orm.session import Session
 
 from models.blog import Blog
 from schemas.blog_schema import ReadBlogResponse, CreateBlogRequest, CreateBlogResponse, UpdateBlogRequest
+from services import blog_svc
 
 router = APIRouter(prefix= "/blogs", tags=["blogs"])
 
 @router.get("/", response_model=List[ReadBlogResponse])
 async def get_all_blogs(db: Session = Depends(get_db)):
-    return db.query(Blog).all()
+    return await blog_svc.get_all_blogs(db)
 
 @router.get("/{id}", response_model=ReadBlogResponse)
 async def get_blog_by_id(id: int, db: Session = Depends(get_db)):
-    blog = db.query(Blog).filter(Blog.id == id).first()
-    if not blog:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"해당 id {id}는(은) 존재하지 않습니다.")
-    return blog
+    return await blog_svc.get_blog_by_id(id, db)
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=CreateBlogResponse)
 async def create_blog(data: CreateBlogRequest, db: Session = Depends(get_db)):
-    try :
-        blog = Blog(
-            title=data.title,
-            content=data.content,
-            author=data.author
-        )
-        db.add(blog)
-        db.commit()
-        db.refresh(blog)
-
-        return blog
-    except SQLAlchemyError as e:
-        db.rollback()
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Database Error")
+    return await blog_svc.create_blog(data, db)
 
 @router.put("/{id}", response_model=ReadBlogResponse)
 async def update_blog(id: int, data: UpdateBlogRequest, db: Session = Depends(get_db)):
-    try:
-        blog = db.query(Blog).filter(Blog.id == id).first()
-
-        if not blog:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"해당 id {id}는(은) 존재하지 않습니다.")
-
-        for key, value in data.model_dump(exclude_unset=True).items():
-            setattr(blog, key, value)
-
-        db.commit()
-        db.refresh(blog)
-        return blog
-    except SQLAlchemyError as e:
-        db.rollback()
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Database Error")
+    return await blog_svc.update_blog(id, data, db)
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_blog(id: int, db: Session = Depends(get_db)):
-    try:
-        blog = db.query(Blog).filter(Blog.id == id).first()
-
-        if not blog:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"해당 id {id}는(은) 존재하지 않습니다.")
-
-        db.delete(blog)
-        db.commit()
-    except SQLAlchemyError as e:
-        db.rollback()
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Database Error")
+    blog_svc.delete_blog(id, db)
 
 # @router.get("/")
 # async def get_all_blogs():
