@@ -1,5 +1,6 @@
 from typing import Optional
 
+from fastapi import UploadFile
 from pydantic import BaseModel, Field
 from datetime import datetime
 from pydantic.dataclasses import dataclass
@@ -29,7 +30,7 @@ class CreateBlogRequest(BaseModel):
     title: str = Field(..., min_length=2, max_length=200)
     author: str = Field(..., max_length=100)
     content: str = Field(..., min_length=2, max_length=4000)
-    image_loc: Optional[str] = Field(None, max_length=400)
+    imagefile: UploadFile = Field(None)
 
 class CreateBlogResponse(BaseModel):
     id: int

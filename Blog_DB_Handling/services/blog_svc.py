@@ -7,7 +7,7 @@ from sqlalchemy.orm.session import Session
 from models.blog import Blog
 from schemas.blog_schema import ReadBlogResponse, CreateBlogRequest, CreateBlogResponse, UpdateBlogRequest
 
-async def get_all_blogs(db: Session):
+async def get_all_blogs(db: Session) :
     return db.query(Blog).all()
 
 async def get_blog_by_id(id: int, db: Session):
